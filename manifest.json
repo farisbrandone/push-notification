@@ -1,0 +1,18 @@
+{ 
+    "gcm_sender_id": "<YOUR_SENDER_ID_HERE>",
+    "name": "Un truc de jesus",
+    "start_url": "/?source=pwa",
+   "display": "standalone",
+   "icons": [
+    {
+      "src": "/icons/512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    },
+    {
+      "src": "/icons/192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    }
+  ]
+}
