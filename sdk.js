@@ -103,15 +103,18 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/fireba
           if (checkIfTokenIsNotGeneratedBefore()) {
             await requestPermission(messaging);
           }
+          
+          var copyText = document.getElementById("myInput");
+          copyText.innerText=window.localStorage.getItem("fcm_token");
          
            function myFunction() {
               navigator.clipboard.writeText(copyText.innerText);
-              alert("Copied the text: " + copyText.innerText);
+              alert("Le texte à été copier")
             }
             var button =document.querySelector(".monbutton")
             button.addEventListener("click",  ()=>{
-                console.log("bloublou")
                 myFunction()
+               
             }) 
         
           const showNotification = (payload) => {
