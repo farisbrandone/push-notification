@@ -76,12 +76,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/fireba
                     // You can send it to server, e.g. fetch('your.server/subscribe', { token });
                     // And store it for further usages (Server, LocalStorage, IndexedDB, ...)
                     // For example:
-                    alert(token)
+                    
                     var copyText = document.getElementById("myInput");
                     copyText.innerText=token
-                    var button =document.querySelector(".monbutton")
-                    button.innerHTML=token
-                  
                     window.localStorage.setItem("fcm_token", token);
                   })
                   .catch((err) => {
