@@ -76,6 +76,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/fireba
                     // You can send it to server, e.g. fetch('your.server/subscribe', { token });
                     // And store it for further usages (Server, LocalStorage, IndexedDB, ...)
                     // For example:
+                    var copyText = document.getElementById("myInput");
+                    copyText.innerText=token
                   
                     window.localStorage.setItem("fcm_token", token);
                   })
@@ -98,17 +100,16 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/fireba
           if (checkIfTokenIsNotGeneratedBefore()) {
             await requestPermission(messaging);
           }
-          var copyText = document.getElementById("myInput");
-          copyText.innerText=window.localStorage.getItem("fcm_token");
-          function myFunction() {
+         
+           function myFunction() {
               navigator.clipboard.writeText(copyText.innerText);
-              alert("Copied the text: " + copyText.value);
+              alert("Copied the text: " + copyText.innerText);
             }
             var button =document.querySelector(".monbutton")
             button.addEventListener("click",  ()=>{
                 console.log("bloublou")
                 myFunction()
-            })
+            }) 
         
           const showNotification = (payload) => {
             const {
