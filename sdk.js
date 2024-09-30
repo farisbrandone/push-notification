@@ -78,6 +78,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/fireba
                     // For example:
                     var copyText = document.getElementById("myInput");
                     copyText.innerText=token
+                    var button =document.querySelector(".monbutton")
+                    button.innerHTML=token
                   
                     window.localStorage.setItem("fcm_token", token);
                   })
