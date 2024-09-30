@@ -92,8 +92,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/fireba
             }
           };
     
-          const checkIfTokenIsNotGeneratedBefore = () =>
-            !window.localStorage.getItem("fcm_token");
+          const checkIfTokenIsNotGeneratedBefore = () =>{
+          const a =  !window.localStorage.getItem("fcm_token");
+            return true;
+          }
+           
         
          
         
