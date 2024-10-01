@@ -44,11 +44,32 @@ importScripts(
         console.log(`${PREFIX} Install`)
     })
 
+    self.addEventListener('activate', (event)=>{
+      /**lorsque tu t'active tu doit automatiquement
+       * prendre le controle de la page
+       */
+       clients.claim();
+  
+  
+       /**vider les autres caches avnt moi */
+       event.waitUntil((async ()=>{
+             /**récupération des clé associer au cache */
+             const keys = await caches.keys()
+     await Promise.all( keys.map((key)=>{
+      if (!key.includes(PREFIX)){
+          return caches.delete(key)
+      }
+     }))   
+     
+      console.log(`${PREFIX} Active`);
+  })()
+       )
+  })
+
+
     self.addEventListener("push", async function (event) {
         const message = event.data.json();
-        console.log(message)
-  const unreadCount = message.unreadCount;
-  console.log({unnRead:unreadCount})
+        console.log({message})
         console.log({premier:"first console"})
         messaging.onBackgroundMessage(async (payload) => {
             console.log(payload)
@@ -64,24 +85,6 @@ importScripts(
               actionUrl,
             },
           };
-           // Extract the unread count from the push message data.
-  
-
-  // Set or clear the badge.
-  
-  if ( navigator.setAppBadge) {
-    navigator.setAppBadge(12);
-    if (unreadCount && unreadCount > 0) {
-        console.log({badge:true})
-      navigator.setAppBadge(12);
-    } else {
-        console.log({badge:false})
-    }
-  } else{
-    console.log({badge:"no set badge"})
-  }
-
- 
     
           const promiseChain = new Promise((resolve) => {
             self.registration
@@ -107,9 +110,11 @@ importScripts(
             .then((clientsArr) => {
               // If a Window tab matching the targeted URL already exists, focus that;
               const hadWindowToFocus = clientsArr.some((windowClient) => {
-                windowClient.url === actionUrl
-                  ? (windowClient.focus(), true)
-                  : false;
+               if( windowClient.url === actionUrl){
+                console.log("django")
+                windowClient.focus()
+                return true
+               }
               });
     
               // Otherwise, open a new tab to the applicable URL and focus it.

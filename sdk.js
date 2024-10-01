@@ -77,8 +77,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/fireba
                     // And store it for further usages (Server, LocalStorage, IndexedDB, ...)
                     // For example:
                     
-                    var copyText = document.getElementById("myInput");
-                    copyText.innerText=token
+                   /*  var copyText = document.getElementById("myInput");
+                    copyText.innerText=token */
                     window.localStorage.setItem("fcm_token", token);
                   })
                   .catch((err) => {
@@ -94,7 +94,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/fireba
     
           const checkIfTokenIsNotGeneratedBefore = () =>{
           const a =  !window.localStorage.getItem("fcm_token");
-            return true;
+            return a;
+          }
+
+          const checkIfNotificationIsNotHere =()=>{
+            const b= !window.localStorage.getItem("number_of_notification");
+            return b
           }
            
         
@@ -118,6 +123,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/fireba
             }) 
         
           const showNotification = (payload) => {
+            console.log({payload})
             const {
               // It's better to send notifications as Data Message to handle it by your own SDK
               // See https://firebase.google.com/docs/cloud-messaging/concept-options#notifications_and_data_messages
@@ -133,6 +139,15 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/fireba
         
             notification.onclick = (event) => {
               event.preventDefault(); // prevent the browser from focusing the Notification's tab
+              const a= Number(window.localStorage.getItem("number_of_notification"))
+              if (a===1){
+                window.localStorage.setItem("number_of_notification","");
+                navigator.clearAppBadge();
+              }else{
+                const c=a-1
+                navigator.setAppBadge(c);
+                window.localStorage.setItem("number_of_notification",c);
+              }
               window.open(actionUrl, "_blank").focus();
             };
           };
@@ -140,6 +155,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/fireba
           // ...
         
           onMessage(messaging, (payload) => {
+            if (checkIfNotificationIsNotHere()){
+              window.localStorage.setItem("number_of_notification",1);  
+            }else{
+              let b =Number(window.localStorage.getItem("number_of_notification"))+1
+              navigator.setAppBadge(b);
+              window.localStorage.setItem("number_of_notification",b);
+            }
             showNotification(payload);
           });
       }
