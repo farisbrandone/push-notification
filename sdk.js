@@ -30,14 +30,31 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/fireba
         measurementId: "G-E7R22DLZ61",
         };
     
-         const app = initializeApp(
-          firebaseConfig,
-          "Give your APP a name, otherwise it will be '[DEFAULT]'"
-        ); 
+         const app = initializeApp(firebaseConfig); 
     
-        const messaging = getMessaging(app);
+         const messaging = getMessaging();
+        console.log(messaging)
     
+        const ulNotifyElement=window.document.getElementById("noifybox_ul")
+       
+        const numberNotification = numberOkKeyInLocalStorage(window)
+        console.log({ numberNotification})
+
+        if(numberNotification>0){
+               const   arrayKeys=[...arrayOfKey(window)]
+               console.log({arrayKeys})
+               if (arrayKeys.length > 0){
+                for (let arraykey of arrayKeys){
+                  createLi(window,arraykey, ulNotifyElement)
+                  console.log("django"+arraykey)
+                }
+               }
+              
+        }
+       
+
         const registerServiceWorker = async () => {
+          console.log("registerServiceWorker")
             try {
               const swOptions = {
                 type: "classic",
@@ -61,6 +78,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/fireba
           };
     
           const requestPermission = async (messaging) => {
+            console.log( "requestPermission")
             try {
               const permission = await window.Notification.requestPermission();
         
@@ -94,16 +112,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/fireba
     
           const checkIfTokenIsNotGeneratedBefore = () =>{
           const a =  !window.localStorage.getItem("fcm_token");
-            return a;
+            return true;
           }
-
-          const checkIfNotificationIsNotHere =()=>{
-            const b= !window.localStorage.getItem("number_of_notification");
-            return b
-          }
-           
-        
-         
         
           if (checkIfTokenIsNotGeneratedBefore()) {
             await requestPermission(messaging);
@@ -123,11 +133,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/fireba
             }) 
         
           const showNotification = (payload) => {
-            console.log({payload})
+            console.log({beginshownotification:payload})
             const {
               // It's better to send notifications as Data Message to handle it by your own SDK
               // See https://firebase.google.com/docs/cloud-messaging/concept-options#notifications_and_data_messages
-              data: { title, body, actionUrl, icon },
+              notification: { title, body, actionUrl, icon },
             } = payload;
         
             // See https://developer.mozilla.org/docs/Web/API/Notification
@@ -139,33 +149,97 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/fireba
         
             notification.onclick = (event) => {
               event.preventDefault(); // prevent the browser from focusing the Notification's tab
-              const a= Number(window.localStorage.getItem("number_of_notification"))
-              if (a===1){
-                window.localStorage.setItem("number_of_notification","");
+             const a=numberOkKeyInLocalStorage(window)
+             console.log({a})
+             console.log({navigator})
+              if (a===1 || a===0){
                 navigator.clearAppBadge();
               }else{
                 const c=a-1
+                console.log(navigator)
                 navigator.setAppBadge(c);
-                window.localStorage.setItem("number_of_notification",c);
               }
+              window.localStorage.removeItem(`number_of_notification-${title}-${body}`);
+              if (document.querySelector(`.number_of_notification-${title}-${body}`)){
+                document.querySelector(`.number_of_notification-${title}-${body}`).remove()
+              }
+
               window.open(actionUrl, "_blank").focus();
             };
           };
         
-          // ...
-        
+
           onMessage(messaging, (payload) => {
-            if (checkIfNotificationIsNotHere()){
-              window.localStorage.setItem("number_of_notification",1);  
-            }else{
-              let b =Number(window.localStorage.getItem("number_of_notification"))+1
+           // const ulNotifyElement=window.document.getElementById("noifybox_ul")
+            console.log({mypayload:payload})
+              window.localStorage.setItem(`number_of_notification-${payload.notification.title}-${payload.notification.body}`,payload.notification.title);  
+              if (!document.querySelector(`.number_of_notification-${payload.notification.title}-${payload.notification.body}`)){
+                createLi(window,`number_of_notification-${payload.notification.title}-${payload.notification.body}`,ulNotifyElement)
+              }
+             const b=numberOkKeyInLocalStorage(window)
               navigator.setAppBadge(b);
-              window.localStorage.setItem("number_of_notification",b);
-            }
             showNotification(payload);
           });
       }
 
+      
      
 
 })(window);
+
+function numberOkKeyInLocalStorage(window){
+  let a=0
+  for (var i = 0; i < window.localStorage.length; i++) {
+    console.log(window.localStorage.key(i))
+    if (window.localStorage.key(i).startsWith("number_of_notification")){
+      a+=1
+      console.log(a)
+    }
+  }
+  return a
+}
+
+
+
+function arrayOfKey(window){
+  console.log("enter")
+  const arrayKeyOfNotification=[]
+  for (let i = 0; i<window.localStorage.length;i++){
+   let value=window.localStorage.key(i)
+   console.log({value})
+   if (value && value.startsWith("number_of_notification")){
+     arrayKeyOfNotification.push(value)
+   }
+  }
+  return [ ...arrayKeyOfNotification]
+}
+
+function createLi(window,arraykey,ulNotifyElement){
+  console.log(arraykey)
+  console.log(ulNotifyElement)
+  const li =  window.document.createElement("li")
+  li.setAttribute("class", arraykey)
+  const texte=window.localStorage.getItem(arraykey)
+  li.innerText=texte
+  console.log(li)
+  ulNotifyElement.appendChild(li)
+  li.style.textAlign="center"
+  li.style.padding="2"
+  li.style.cursor="pointer"
+  li.addEventListener('mouseover',function(){
+    li.style.color="#ffffff"
+     li.style.backgroundColor="#2c64c0"
+ })
+ li.addEventListener('mouseleave',function(){
+   li.style.color="black"
+     li.style.backgroundColor="white"
+})
+  console.log(li)
+  
+
+  li.addEventListener("click", () =>{
+    li.remove()
+    window.localStorage.removeItem(arraykey)
+  })
+}
+
