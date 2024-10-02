@@ -1,4 +1,20 @@
 import {} from  "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js" ;
+
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-analytics.js";
+      import { getFirestore } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+
+      import {
+        collection,
+        query,
+        doc,
+        addDoc,
+        setDoc,
+        getDocs,
+        deleteDoc,
+        updateDoc,
+        where,
+      } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+      
 // Import `firebase-messaging` at the top
 import {
     getMessaging,
@@ -10,6 +26,25 @@ import {
   
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
 
+
+
+
+const firebaseConfig = {
+  // See https://firebase.google.com/docs/web/setup#add-sdks-initialize
+  apiKey: "AIzaSyBqHomX-GSUzQOf9j6g3G4HNGTlQPtySdk",
+authDomain: "un-truc-de-jesus-carte.firebaseapp.com",
+projectId: "un-truc-de-jesus-carte",
+storageBucket: "un-truc-de-jesus-carte.appspot.com",
+messagingSenderId: "255170124059",
+appId: "1:255170124059:web:9b7818ec3f7e5b127b9bbe",
+measurementId: "G-E7R22DLZ61",
+};
+
+const app = initializeApp(firebaseConfig); 
+const db = getFirestore(app);
+const citiesRef = collection(db, "notificationDatas");
+
+
 (async function (window) {
     if (!isSupported()) {
         return;
@@ -19,37 +54,36 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/fireba
         return;
       } else {
         console.log({inside: "SDK"})
-        const firebaseConfig = {
-          // See https://firebase.google.com/docs/web/setup#add-sdks-initialize
-          apiKey: "AIzaSyBqHomX-GSUzQOf9j6g3G4HNGTlQPtySdk",
-        authDomain: "un-truc-de-jesus-carte.firebaseapp.com",
-        projectId: "un-truc-de-jesus-carte",
-        storageBucket: "un-truc-de-jesus-carte.appspot.com",
-        messagingSenderId: "255170124059",
-        appId: "1:255170124059:web:9b7818ec3f7e5b127b9bbe",
-        measurementId: "G-E7R22DLZ61",
-        };
+       
     
-         const app = initializeApp(firebaseConfig); 
-    
+       
          const messaging = getMessaging();
         console.log(messaging)
     
         const ulNotifyElement=window.document.getElementById("noifybox_ul")
+        const clocheElement=window.document.getElementById("noifybox")
+        clocheElement.style.position="relative"
+        const badgeElement=window.document.createElement("div")
+        badgeElement.setAttribute("class", "badgeStyle")
+        clocheElement.appendChild(badgeElement)
        
-        const numberNotification = numberOkKeyInLocalStorage(window)
+        //const numberNotification = numberOkKeyInLocalStorage(window)
+
+        const q = query(citiesRef);
+        const querySnapshot = await getDocs(q);
+        const numberNotification=querySnapshot.docs.length
+
         console.log({ numberNotification})
 
-        if(numberNotification>0){
-               const   arrayKeys=[...arrayOfKey(window)]
-               console.log({arrayKeys})
-               if (arrayKeys.length > 0){
-                for (let arraykey of arrayKeys){
-                  createLi(window,arraykey, ulNotifyElement)
-                  console.log("django"+arraykey)
-                }
-               }
-              
+        if(numberNotification && numberNotification>0){
+             
+                badgeElement.innerText=numberNotification
+                querySnapshot.forEach((doc) => {
+                 
+                  createLi(window,doc, ulNotifyElement)
+                  console.log("django"+doc.data())
+                  // doc.data() is never undefined for query doc snapshots
+                });
         }
        
 
@@ -62,7 +96,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/fireba
               };
         
               const sw = await window.navigator.serviceWorker.register(`/sw.js`, swOptions);
-        
+              
               return sw
                 .update()
                 .then((registration) => {
@@ -132,7 +166,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/fireba
                
             }) 
         
-          const showNotification = (payload) => {
+         /*  const showNotification = (payload) => {
             console.log({beginshownotification:payload})
             const {
               // It's better to send notifications as Data Message to handle it by your own SDK
@@ -151,7 +185,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/fireba
               event.preventDefault(); // prevent the browser from focusing the Notification's tab
              const a=numberOkKeyInLocalStorage(window)
              console.log({a})
-             console.log({navigator})
+             if (navigator.setAppBadge) {
+              console.log("The App Badging API is supported!");
+              console.log({navigator})
               if (a===1 || a===0){
                 navigator.clearAppBadge();
               }else{
@@ -159,6 +195,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/fireba
                 console.log(navigator)
                 navigator.setAppBadge(c);
               }
+          }
+            
               window.localStorage.removeItem(`number_of_notification-${title}-${body}`);
               if (document.querySelector(`.number_of_notification-${title}-${body}`)){
                 document.querySelector(`.number_of_notification-${title}-${body}`).remove()
@@ -166,19 +204,24 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/fireba
 
               window.open(actionUrl, "_blank").focus();
             };
-          };
+          }; */
         
 
-          onMessage(messaging, (payload) => {
+        onMessage(messaging, (payload) => {
            // const ulNotifyElement=window.document.getElementById("noifybox_ul")
-            console.log({mypayload:payload})
+           /*  console.log({mypayload:payload})
               window.localStorage.setItem(`number_of_notification-${payload.notification.title}-${payload.notification.body}`,payload.notification.title);  
               if (!document.querySelector(`.number_of_notification-${payload.notification.title}-${payload.notification.body}`)){
                 createLi(window,`number_of_notification-${payload.notification.title}-${payload.notification.body}`,ulNotifyElement)
               }
              const b=numberOkKeyInLocalStorage(window)
-              navigator.setAppBadge(b);
+              navigator.setAppBadge(b); */
             showNotification(payload);
+          });
+
+          navigator.serviceWorker.addEventListener("message", (e) => {
+            console.log("newMessage")
+            console.log(e)
           });
       }
 
@@ -215,12 +258,13 @@ function arrayOfKey(window){
 }
 
 function createLi(window,arraykey,ulNotifyElement){
+  const db = getFirestore(app);
   console.log(arraykey)
   console.log(ulNotifyElement)
   const li =  window.document.createElement("li")
-  li.setAttribute("class", arraykey)
-  const texte=window.localStorage.getItem(arraykey)
-  li.innerText=texte
+  li.setAttribute("class", arraykey.id)
+ // const texte=window.localStorage.getItem(arraykey)
+  li.innerText=arraykey.data().title
   console.log(li)
   ulNotifyElement.appendChild(li)
   li.style.textAlign="center"
@@ -237,9 +281,40 @@ function createLi(window,arraykey,ulNotifyElement){
   console.log(li)
   
 
-  li.addEventListener("click", () =>{
-    li.remove()
-    window.localStorage.removeItem(arraykey)
+  li.addEventListener("click", async () =>{
+    
+    /* window.localStorage.removeItem(arraykey)
+    const a=numberOkKeyInLocalStorage(window)
+    console.log({a})
+   const title=li.innerText */
+   const docRef = doc(db, "notificationDatas", arraykey.id);
+   const result = await deleteDoc(docRef)
+    const q = query(citiesRef);
+    const querySnapshot = await getDocs(q);
+    const unreadNotification=querySnapshot.docs.length
+   
+    if (navigator.setAppBadge ) {
+      console.log("The App Badging API is supported!");
+      console.log({navigator})
+      if (unreadNotification===0){
+        navigator.clearAppBadge();
+      }else if ( unreadNotification){
+        navigator.setAppBadge(unreadNotification);
+      }
+  }
+  li.remove();
+  location.reload();
+   /*  if (navigator.setAppBadge) {
+      console.log("The App Badging API is supported!");
+      console.log({navigator})
+      if (a===1 || a===0){
+        navigator.clearAppBadge();
+      }else{
+        const c=a-1
+        console.log(navigator)
+        navigator.setAppBadge(c);
+      }
+  } */
   })
 }
 
